@@ -51,113 +51,61 @@ export function AliasForm({ shell, editingAlias, onSubmit, onCancel }: Props) {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    padding: '0.5rem 0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
-    fontSize: '0.875rem',
-    width: '100%',
-    boxSizing: 'border-box',
-  };
-
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.3)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 100,
-      }}
-      onClick={onCancel}
-    >
+    <div className="modal-overlay" onClick={onCancel}>
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '1.5rem',
-          width: '400px',
-          maxWidth: '90vw',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-        }}
+        className="modal-panel"
       >
-        <h3 style={{ margin: '0 0 1rem', fontSize: '1rem' }}>
-          {editingAlias ? 'Edit Alias' : 'Add Alias'}
+        <h3 className="modal-title">
+          {editingAlias ? '› edit alias' : '› new alias'}
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <div>
-            <label style={{ fontSize: '0.8125rem', fontWeight: 500 }}>Name</label>
-            <input
-              style={inputStyle}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. gs"
-              autoFocus
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: '0.8125rem', fontWeight: 500 }}>Command</label>
-            <input
-              style={inputStyle}
-              value={command}
-              onChange={(e) => setCommand(e.target.value)}
-              placeholder="e.g. git status"
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: '0.8125rem', fontWeight: 500 }}>
-              Group <span style={{ color: '#999' }}>(optional)</span>
-            </label>
-            <input
-              style={inputStyle}
-              value={group}
-              onChange={(e) => setGroup(e.target.value)}
-              placeholder="e.g. git"
-            />
-          </div>
+        <div className="field">
+          <label className="field-label">name</label>
+          <input
+            className="field-input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="gs"
+            autoFocus
+          />
+        </div>
+        <div className="field">
+          <label className="field-label">command</label>
+          <input
+            className="field-input"
+            value={command}
+            onChange={(e) => setCommand(e.target.value)}
+            placeholder="git status"
+          />
+        </div>
+        <div className="field">
+          <label className="field-label">
+            group <span className="optional">(optional)</span>
+          </label>
+          <input
+            className="field-input"
+            value={group}
+            onChange={(e) => setGroup(e.target.value)}
+            placeholder="git"
+          />
         </div>
 
-        {error && (
-          <div style={{ marginTop: '0.75rem', color: '#c62828', fontSize: '0.8125rem' }}>
-            {error}
-          </div>
-        )}
+        {error && <div className="form-error">{error}</div>}
 
-        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{
-              padding: '0.5rem 1rem',
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              background: '#f5f5f5',
-              cursor: 'pointer',
-              fontSize: '0.8125rem',
-            }}
-          >
-            Cancel
+        <div className="modal-actions">
+          <button type="button" className="btn btn-ghost" onClick={onCancel}>
+            cancel
           </button>
           <button
             type="submit"
+            className="btn btn-primary"
             disabled={submitting || !name.trim() || !command.trim()}
-            style={{
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '6px',
-              background: '#0066ff',
-              color: '#fff',
-              cursor: 'pointer',
-              fontSize: '0.8125rem',
-              opacity: submitting ? 0.6 : 1,
-            }}
+            style={{ opacity: submitting ? 0.6 : 1 }}
           >
-            {submitting ? 'Saving...' : editingAlias ? 'Update' : 'Add'}
+            {submitting ? 'saving...' : editingAlias ? 'update' : 'add'}
           </button>
         </div>
       </form>

@@ -10,7 +10,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export function HomePage() {
   const { shells, activeShell, setActiveShell, loading: shellsLoading } = useShells();
-  const { aliases, loading: aliasesLoading, error, refresh, add, update, remove } = useAliases(activeShell);
+  const { aliases, loading: aliasesLoading, error, add, update, remove } = useAliases(activeShell);
 
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -54,72 +54,57 @@ export function HomePage() {
   };
 
   if (shellsLoading) {
-    return <div style={{ padding: '2rem', color: '#999' }}>Detecting shells...</div>;
+    return (
+      <div className="app-container">
+        <div className="loading">detecting shells</div>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: '1.25rem', fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: '960px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Custom Alias</h1>
+    <div className="app-container">
+      <header className="app-header">
+        <h1 className="app-title">custom-alias</h1>
         <button
+          className="btn btn-primary"
           onClick={() => {
             setEditingAlias(null);
             setShowForm(true);
           }}
           disabled={!activeShell}
-          style={{
-            padding: '0.5rem 1rem',
-            border: 'none',
-            borderRadius: '6px',
-            background: '#0066ff',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '0.8125rem',
-            fontWeight: 500,
-          }}
         >
-          + Add Alias
+          + add
         </button>
-      </div>
+      </header>
 
-      <ShellSelector shells={shells} activeShell={activeShell} onSelect={setActiveShell} />
-      <SearchBar value={search} onChange={setSearch} />
+      <main className="app-content">
+        <ShellSelector shells={shells} activeShell={activeShell} onSelect={setActiveShell} />
+        <SearchBar value={search} onChange={setSearch} />
 
-      {error && (
-        <div style={{ padding: '0.75rem', background: '#ffebee', color: '#c62828', borderRadius: '6px', marginBottom: '0.75rem', fontSize: '0.8125rem' }}>
-          {error}
-        </div>
-      )}
+        {error && <div className="error-banner">{error}</div>}
 
-      {aliasesLoading ? (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>Loading aliases...</div>
-      ) : (
-        <>
-          <div style={{ marginBottom: '0.5rem', fontSize: '0.75rem', color: '#999', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>
-              {filtered.length} alias{filtered.length !== 1 ? 'es' : ''} found
-              {search && ` (filtered from ${userAliases.length})`}
-            </span>
-            {runtimeOnlyCount > 0 && (
-              <button
-                onClick={() => setShowAll(!showAll)}
-                style={{
-                  padding: '0.25rem 0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  background: showAll ? '#fff3e0' : '#f5f5f5',
-                  cursor: 'pointer',
-                  fontSize: '0.75rem',
-                  color: '#666',
-                }}
-              >
-                {showAll ? `Hide plugin aliases (${runtimeOnlyCount})` : `Show plugin aliases (${runtimeOnlyCount})`}
-              </button>
-            )}
-          </div>
-          <AliasTable aliases={filtered} onEdit={handleEdit} onDelete={setDeletingName} />
-        </>
-      )}
+        {aliasesLoading ? (
+          <div className="loading">loading aliases</div>
+        ) : (
+          <>
+            <div className="status-bar">
+              <span className="status-count">
+                {filtered.length} alias{filtered.length !== 1 ? 'es' : ''}
+                {search && ` / ${userAliases.length} total`}
+              </span>
+              {runtimeOnlyCount > 0 && (
+                <button
+                  className={`btn-toggle ${showAll ? 'active' : ''}`}
+                  onClick={() => setShowAll(!showAll)}
+                >
+                  {showAll ? 'hide' : 'show'} plugins ({runtimeOnlyCount})
+                </button>
+              )}
+            </div>
+            <AliasTable aliases={filtered} onEdit={handleEdit} onDelete={setDeletingName} />
+          </>
+        )}
+      </main>
 
       {showForm && activeShell && (
         <AliasForm
@@ -135,7 +120,7 @@ export function HomePage() {
 
       {deletingName && (
         <ConfirmDialog
-          message={`Delete alias "${deletingName}"?`}
+          aliasName={deletingName}
           onConfirm={handleDelete}
           onCancel={() => setDeletingName(null)}
         />
