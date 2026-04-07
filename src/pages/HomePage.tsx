@@ -46,10 +46,18 @@ export function HomePage() {
     setShowForm(true);
   };
 
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const handleDelete = async () => {
     if (deletingName) {
-      await remove(deletingName);
-      setDeletingName(null);
+      try {
+        await remove(deletingName);
+        setDeletingName(null);
+        setDeleteError(null);
+      } catch (e) {
+        setDeleteError(String(e));
+        setDeletingName(null);
+      }
     }
   };
 
@@ -82,6 +90,7 @@ export function HomePage() {
         <SearchBar value={search} onChange={setSearch} />
 
         {error && <div className="error-banner">{error}</div>}
+        {deleteError && <div className="error-banner">{deleteError}</div>}
 
         {aliasesLoading ? (
           <div className="loading">loading aliases</div>

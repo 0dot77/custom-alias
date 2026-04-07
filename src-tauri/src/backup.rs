@@ -109,6 +109,30 @@ pub fn list_backups(shell: &ShellType) -> Result<Vec<BackupInfo>, AppError> {
 }
 
 pub fn restore_backup(backup_path: &Path) -> Result<(), AppError> {
+    // Validate: backup_path must be inside the backup directory
+    let backup_dir = config_paths::get_backup_dir().ok_or_else(|| {
+        AppError::Io(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine backup directory",
+        ))
+    })?;
+
+    let canonical_backup = backup_path.canonicalize().map_err(|_| {
+        AppError::ConfigNotFound {
+            path: backup_path.to_string_lossy().to_string(),
+        }
+    })?;
+
+    if backup_dir.exists() {
+        let canonical_dir = backup_dir.canonicalize()?;
+        if !canonical_backup.starts_with(&canonical_dir) {
+            return Err(AppError::Io(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "Backup path is outside the backup directory",
+            )));
+        }
+    }
+
     // Extract original file name from backup name (e.g., ".zshrc_20240101_120000.bak" -> ".zshrc")
     let backup_name = backup_path
         .file_name()
@@ -116,13 +140,20 @@ pub fn restore_backup(backup_path: &Path) -> Result<(), AppError> {
         .to_string_lossy()
         .to_string();
 
-    // Find the original config file path
     // Backup name format: {original_name}_{timestamp}.bak
     let original_name = backup_name
         .rsplit_once('_')
         .and_then(|(rest, _)| rest.rsplit_once('_'))
         .map(|(name, _)| name)
         .unwrap_or(&backup_name);
+
+    // Validate: original_name must not contain path separators or ".."
+    if original_name.contains('/') || original_name.contains('\\') || original_name.contains("..") {
+        return Err(AppError::Io(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "Invalid backup file name",
+        )));
+    }
 
     let home = dirs::home_dir().ok_or_else(|| {
         AppError::Io(std::io::Error::new(
