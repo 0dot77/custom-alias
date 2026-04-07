@@ -29,6 +29,7 @@ pub fn run() {
             commands::add_alias,
             commands::update_alias,
             commands::delete_alias,
+            commands::delete_external_alias,
             commands::import_alias,
             commands::list_backups,
             commands::restore_backup,

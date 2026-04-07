@@ -46,6 +46,16 @@ pnpm tauri dev
 pnpm tauri build
 ```
 
+### macOS 설치 시 "손상된 파일" 해결
+
+빌드된 앱을 다른 Mac에서 열 때 "손상된 파일"이라는 경고가 나타날 수 있습니다. 터미널에서 아래 명령어를 실행하세요:
+
+```bash
+xattr -cr /Applications/Custom\ Alias.app
+```
+
+> Apple Developer 인증서 없이 빌드된 앱은 macOS Gatekeeper가 차단합니다. 위 명령어로 격리 속성을 제거하면 정상 실행됩니다.
+
 ### 프로젝트 구조
 
 ```
@@ -106,6 +116,16 @@ pnpm tauri dev
 # Build for production
 pnpm tauri build
 ```
+
+### macOS: "Damaged File" Fix
+
+When opening the built app on another Mac, you may see a "damaged file" warning. Run this in Terminal:
+
+```bash
+xattr -cr /Applications/Custom\ Alias.app
+```
+
+> Apps built without an Apple Developer certificate are blocked by macOS Gatekeeper. The command above removes the quarantine attribute so the app runs normally.
 
 ### Project Structure
 

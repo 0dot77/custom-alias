@@ -4,6 +4,7 @@ interface Props {
   aliases: MergedAlias[];
   onEdit: (alias: MergedAlias) => void;
   onDelete: (name: string) => void;
+  onDeleteExternal: (alias: MergedAlias) => void;
 }
 
 function sourceBadge(alias: MergedAlias): { label: string; className: string } {
@@ -16,7 +17,7 @@ function sourceBadge(alias: MergedAlias): { label: string; className: string } {
   }
 }
 
-export function AliasTable({ aliases, onEdit, onDelete }: Props) {
+export function AliasTable({ aliases, onEdit, onDelete, onDeleteExternal }: Props) {
   if (aliases.length === 0) {
     return (
       <div className="empty-state">
@@ -67,8 +68,14 @@ export function AliasTable({ aliases, onEdit, onDelete }: Props) {
                         del
                       </button>
                     </div>
-                  ) : (
+                  ) : alias.source.type === 'runtimeOnly' ? (
                     <span className="read-only-label">readonly</span>
+                  ) : (
+                    <div className="action-buttons">
+                      <button className="btn-danger" onClick={() => onDeleteExternal(alias)}>
+                        del
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>

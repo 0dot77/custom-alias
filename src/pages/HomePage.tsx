@@ -10,7 +10,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export function HomePage() {
   const { shells, activeShell, setActiveShell, loading: shellsLoading } = useShells();
-  const { aliases, loading: aliasesLoading, error, add, update, remove } = useAliases(activeShell);
+  const { aliases, loading: aliasesLoading, error, add, update, remove, removeExternal } = useAliases(activeShell);
 
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -47,6 +47,7 @@ export function HomePage() {
   };
 
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletingExternal, setDeletingExternal] = useState<MergedAlias | null>(null);
 
   const handleDelete = async () => {
     if (deletingName) {
@@ -57,6 +58,19 @@ export function HomePage() {
       } catch (e) {
         setDeleteError(String(e));
         setDeletingName(null);
+      }
+    }
+  };
+
+  const handleDeleteExternal = async () => {
+    if (deletingExternal && deletingExternal.source.path && deletingExternal.source.line != null) {
+      try {
+        await removeExternal(deletingExternal.source.path, deletingExternal.source.line);
+        setDeletingExternal(null);
+        setDeleteError(null);
+      } catch (e) {
+        setDeleteError(String(e));
+        setDeletingExternal(null);
       }
     }
   };
@@ -110,7 +124,7 @@ export function HomePage() {
                 </button>
               )}
             </div>
-            <AliasTable aliases={filtered} onEdit={handleEdit} onDelete={setDeletingName} />
+            <AliasTable aliases={filtered} onEdit={handleEdit} onDelete={setDeletingName} onDeleteExternal={setDeletingExternal} />
           </>
         )}
       </main>
@@ -132,6 +146,14 @@ export function HomePage() {
           aliasName={deletingName}
           onConfirm={handleDelete}
           onCancel={() => setDeletingName(null)}
+        />
+      )}
+
+      {deletingExternal && (
+        <ConfirmDialog
+          aliasName={deletingExternal.name}
+          onConfirm={handleDeleteExternal}
+          onCancel={() => setDeletingExternal(null)}
         />
       )}
     </div>

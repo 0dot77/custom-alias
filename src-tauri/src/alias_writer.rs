@@ -220,6 +220,46 @@ pub fn delete_alias(name: &str, shell: &ShellType) -> Result<(), AppError> {
     Ok(())
 }
 
+/// Delete an alias from a config file by file path and line number.
+/// Used for removing external/unmanaged aliases (e.g. corrupted or unwanted entries).
+/// Line-based deletion avoids regex issues with corrupted alias names.
+pub fn delete_external_alias(file_path: &str, line: usize, shell: &ShellType) -> Result<(), AppError> {
+    let path = std::path::Path::new(file_path);
+
+    if !path.exists() {
+        return Err(AppError::ConfigNotFound {
+            path: file_path.to_string(),
+        });
+    }
+
+    let content = std::fs::read_to_string(path)?;
+    let line_ending = detect_line_ending(&content);
+    let lines: Vec<&str> = content.lines().collect();
+
+    // line is 1-based from the parser
+    if line == 0 || line > lines.len() {
+        return Err(AppError::ManagedBlockError {
+            detail: format!("Line {} is out of range for {}", line, file_path),
+        });
+    }
+
+    backup::create_backup(path, shell)?;
+
+    let new_lines: Vec<&str> = lines
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| *i != line - 1) // convert 1-based to 0-based
+        .map(|(_, l)| *l)
+        .collect();
+
+    let mut new_content = new_lines.join(line_ending);
+    if content.ends_with('\n') || content.ends_with("\r\n") {
+        new_content.push_str(line_ending);
+    }
+    std::fs::write(path, &new_content)?;
+    Ok(())
+}
+
 pub fn import_alias(name: &str, shell: &ShellType) -> Result<Alias, AppError> {
     let config_files = config_paths::get_config_files(shell);
 
