@@ -30,7 +30,7 @@ pub fn add_alias(input: &AliasInput) -> Result<Alias, AppError> {
 
     // Check for duplicate in managed section
     let alias_line = format_alias_line(&input.shell, &input.name, &input.command);
-    if has_managed_alias(&content, &input.name) {
+    if has_managed_alias(&content, &input.name, &input.shell) {
         return Err(AppError::DuplicateAlias {
             name: input.name.clone(),
             shell: input.shell.to_string(),
@@ -248,7 +248,8 @@ fn alias_name_pattern(shell: &ShellType, name: &str) -> String {
     }
 }
 
-fn has_managed_alias(content: &str, name: &str) -> bool {
+fn has_managed_alias(content: &str, name: &str, shell: &ShellType) -> bool {
+    let pattern = alias_name_pattern(shell, name);
     let mut in_managed = false;
     for line in content.lines() {
         if line.contains(">>> custom-alias managed >>>") {
@@ -259,7 +260,7 @@ fn has_managed_alias(content: &str, name: &str) -> bool {
             in_managed = false;
             continue;
         }
-        if in_managed && line.contains(name) {
+        if in_managed && line.contains(&pattern) {
             return true;
         }
     }
