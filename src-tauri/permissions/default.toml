@@ -1,0 +1,15 @@
+[[permission]]
+identifier = "allow-all-commands"
+description = "Allows all custom alias manager commands"
+commands.allow = [
+  "detect_shells",
+  "get_aliases",
+  "get_runtime_aliases",
+  "add_alias",
+  "update_alias",
+  "delete_alias",
+  "import_alias",
+  "list_backups",
+  "restore_backup",
+  "get_config_paths",
+]
