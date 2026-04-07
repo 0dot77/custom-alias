@@ -260,6 +260,39 @@ pub fn delete_external_alias(file_path: &str, line: usize, shell: &ShellType) ->
     Ok(())
 }
 
+/// Suppress a runtime-only alias by adding `unalias <name>` to the managed section.
+/// This effectively removes plugin aliases on next shell startup.
+pub fn suppress_alias(name: &str, shell: &ShellType) -> Result<(), AppError> {
+    let target = config_paths::get_write_target(shell).ok_or_else(|| {
+        AppError::ShellNotFound {
+            shell: shell.to_string(),
+        }
+    })?;
+
+    if let Some(parent) = target.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    if !target.exists() {
+        std::fs::write(&target, "")?;
+    }
+
+    backup::create_backup(&target, shell)?;
+
+    let content = std::fs::read_to_string(&target)?;
+    let line_ending = detect_line_ending(&content);
+
+    let unalias_line = match shell {
+        ShellType::Bash | ShellType::Zsh => format!("unalias {} 2>/dev/null || true", name),
+        ShellType::Fish => format!("functions -e {}", name),
+        ShellType::PowerShell => format!("Remove-Alias -Name {} -ErrorAction SilentlyContinue", name),
+    };
+
+    let new_content = insert_into_managed_section(&content, &unalias_line, &None, line_ending);
+    std::fs::write(&target, &new_content)?;
+    Ok(())
+}
+
 pub fn import_alias(name: &str, shell: &ShellType) -> Result<Alias, AppError> {
     let config_files = config_paths::get_config_files(shell);
 

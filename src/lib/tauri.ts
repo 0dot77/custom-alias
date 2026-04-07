@@ -25,6 +25,10 @@ export async function deleteExternalAlias(filePath: string, line: number, shell:
   return invoke('delete_external_alias', { filePath, line, shell });
 }
 
+export async function suppressAlias(name: string, shell: ShellType): Promise<void> {
+  return invoke('suppress_alias', { name, shell });
+}
+
 export async function importAlias(name: string, shell: ShellType): Promise<MergedAlias> {
   return invoke('import_alias', { name, shell });
 }

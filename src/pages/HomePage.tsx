@@ -10,7 +10,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export function HomePage() {
   const { shells, activeShell, setActiveShell, loading: shellsLoading } = useShells();
-  const { aliases, loading: aliasesLoading, error, add, update, remove, removeExternal } = useAliases(activeShell);
+  const { aliases, loading: aliasesLoading, error, add, update, remove, removeExternal, suppress } = useAliases(activeShell);
 
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -48,6 +48,7 @@ export function HomePage() {
 
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deletingExternal, setDeletingExternal] = useState<MergedAlias | null>(null);
+  const [suppressingName, setSuppressingName] = useState<string | null>(null);
 
   const handleDelete = async () => {
     if (deletingName) {
@@ -58,6 +59,19 @@ export function HomePage() {
       } catch (e) {
         setDeleteError(String(e));
         setDeletingName(null);
+      }
+    }
+  };
+
+  const handleSuppress = async () => {
+    if (suppressingName) {
+      try {
+        await suppress(suppressingName);
+        setSuppressingName(null);
+        setDeleteError(null);
+      } catch (e) {
+        setDeleteError(String(e));
+        setSuppressingName(null);
       }
     }
   };
@@ -124,7 +138,7 @@ export function HomePage() {
                 </button>
               )}
             </div>
-            <AliasTable aliases={filtered} onEdit={handleEdit} onDelete={setDeletingName} onDeleteExternal={setDeletingExternal} />
+            <AliasTable aliases={filtered} onEdit={handleEdit} onDelete={setDeletingName} onDeleteExternal={setDeletingExternal} onSuppress={setSuppressingName} />
           </>
         )}
       </main>
@@ -154,6 +168,14 @@ export function HomePage() {
           aliasName={deletingExternal.name}
           onConfirm={handleDeleteExternal}
           onCancel={() => setDeletingExternal(null)}
+        />
+      )}
+
+      {suppressingName && (
+        <ConfirmDialog
+          aliasName={suppressingName}
+          onConfirm={handleSuppress}
+          onCancel={() => setSuppressingName(null)}
         />
       )}
     </div>

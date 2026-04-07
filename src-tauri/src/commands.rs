@@ -72,6 +72,11 @@ pub fn delete_external_alias(file_path: String, line: usize, shell: ShellType) -
 }
 
 #[tauri::command]
+pub fn suppress_alias(name: String, shell: ShellType) -> Result<(), AppError> {
+    alias_writer::suppress_alias(&name, &shell)
+}
+
+#[tauri::command]
 pub fn import_alias(name: String, shell: ShellType) -> Result<Alias, AppError> {
     alias_writer::import_alias(&name, &shell)
 }

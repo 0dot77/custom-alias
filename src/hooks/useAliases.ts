@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { MergedAlias, ShellType, AliasInput } from '../lib/types';
-import { getAliases, addAlias, updateAlias, deleteAlias, deleteExternalAlias } from '../lib/tauri';
+import { getAliases, addAlias, updateAlias, deleteAlias, deleteExternalAlias, suppressAlias } from '../lib/tauri';
 
 export function useAliases(shell: ShellType | null) {
   const [aliases, setAliases] = useState<MergedAlias[]>([]);
@@ -47,5 +47,11 @@ export function useAliases(shell: ShellType | null) {
     await refresh();
   };
 
-  return { aliases, loading, error, refresh, add, update, remove, removeExternal };
+  const suppress = async (name: string) => {
+    if (!shell) return;
+    await suppressAlias(name, shell);
+    await refresh();
+  };
+
+  return { aliases, loading, error, refresh, add, update, remove, removeExternal, suppress };
 }
